@@ -209,7 +209,7 @@ def process_event(crds, obj, event_type):
                 if 'external_service_condition' in policy:
                     external_service_conditions_api = ExternalServiceConditions()
                     try:
-                        external_condition = external_service_conditions_api.list(policy_id=policy_id)
+                        external_conditions = external_service_conditions_api.list(policy_id=policy_id)
                     except NewRelicAPIServerException as e:
                         logger.error('Failed to get alerts condition for {0}: {1}'.format(policy['name'], e.formatted_error))
                         continue
@@ -217,9 +217,9 @@ def process_event(crds, obj, event_type):
                     for condition in policy['external_service_condition']:
                         data = condition
                         data['entities'] = [nr_app_id]
-                        existing_alerts_conditions = external_condition['id'] if external_condition['name'] == condition['name'] else None
+                        existing_alerts_conditions = [i['id'] for i in external_conditions if i['name'] == condition['name']]
 
-                        if existing_alerts_conditions is not None:
+                        if existing_alerts_conditions:
                             try:
                                 external_service_conditions_api.update(condition_id=existing_alerts_conditions[0], condition_data=data)
                             except NewRelicAPIServerException as e:
